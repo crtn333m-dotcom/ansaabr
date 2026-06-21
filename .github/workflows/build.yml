@@ -1,0 +1,42 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: تثبيت Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: فك الضغط
+        run: unzip -o ansaab-final.zip
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+          cache: true
+      
+      - name: إضافة ملفات أندرويد
+        run: flutter create . --platforms=android
+      
+      - name: تحميل المكتبات
+        run: flutter pub get
+      
+      - name: بناء APK تجريبي
+        run: flutter build apk --debug
+      
+      - name: رفع الـ APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ansaab-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
